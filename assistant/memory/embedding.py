@@ -85,3 +85,11 @@ def build_embedding(
             )
     logger.warning("Dummy embedding backend seçildi. Sonuçlar düşük doğrulukta olabilir.")
     return DummyEmbedding()
+
+
+def _require_requests():
+    try:
+        import requests  # type: ignore
+    except ModuleNotFoundError as exc:  # pragma: no cover - optional path
+        raise RuntimeError("requests kütüphanesi kurulu değil. requirements.txt'i yükleyin.") from exc
+    return requests
