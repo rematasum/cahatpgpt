@@ -39,6 +39,8 @@ Yerel notları hafızaya almak için (varsayılan allowlist: `notes/`):
 python -m assistant.cli ingest-notes --path .\notes
 ```
 
+`ingest-notes` neden var? Not klasöründeki `.txt/.md` içerikleri semantik hafızaya ekler; böylece sohbet sırasında ilgili not parçaları bağlam olarak geri çağrılabilir.
+
 Profil özetini görmek için:
 ```powershell
 python -m assistant.cli profile

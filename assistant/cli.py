@@ -52,7 +52,9 @@ def chat(
         handle_turn(user_text)
 
 
-@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
+@app.command(
+    "ingest-notes", context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+)
 def ingest_notes_cmd(
     ctx: typer.Context,
     path: Path = typer.Argument(..., help="Not dizini"),
