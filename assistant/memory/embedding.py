@@ -34,6 +34,11 @@ def _load_sentence_transformer(model_name: str, device: str):
         raise RuntimeError(
             "sentence-transformers yüklü değil. requirements.txt'i kurun veya dummy backend kullanın"
         ) from exc
+    except OSError as exc:  # pragma: no cover - native lib load issues (e.g., torch DLL)
+        raise RuntimeError(
+            "sentence-transformers altındaki torch kütüphaneleri yüklenemedi. "
+            "Torch/CUDA DLL kurulumunu kontrol edin ya da config'te embedding.backend=dummy yapın."
+        ) from exc
     return SentenceTransformer(model_name, device=device if device != "auto" else None)
 
 
@@ -52,6 +57,11 @@ class SentenceTransformerEmbedding(EmbeddingBackend):
 
 def build_embedding(backend: str, model_name: str, device: str) -> EmbeddingBackend:
     if backend == "sentence_transformer":
-        return SentenceTransformerEmbedding(model_name=model_name, device=device)
+        try:
+            return SentenceTransformerEmbedding(model_name=model_name, device=device)
+        except Exception as exc:  # pragma: no cover - runtime fallback
+            logger.warning(
+                "sentence-transformer yüklenemedi (%s). Dummy embedding'e düşülüyor.", exc
+            )
     logger.warning("Dummy embedding backend seçildi. Sonuçlar düşük doğrulukta olabilir.")
     return DummyEmbedding()
