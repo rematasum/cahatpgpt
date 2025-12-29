@@ -17,8 +17,9 @@ app = typer.Typer(add_completion=False)
 console = Console()
 
 
-@app.command()
+@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
 def chat(
+    ctx: typer.Context,
     config: Optional[Path] = typer.Option(
         None, "--config", "-c", help="Ayar dosyası (opsiyonel, yoksa varsayılan kullanılır)"
     ),
@@ -29,7 +30,8 @@ def chat(
         None, help="Tek seferlik mesaj (boşsa etkileşimli mod)"
     ),
 ):
-    chosen_config = config or config_path or Path("config/settings.yaml")
+    extra_cfg = Path(ctx.args[0]) if ctx.args else None
+    chosen_config = config or config_path or extra_cfg or Path("config/settings.yaml")
     settings = load_settings(chosen_config)
     setup_logging(settings.paths.log_dir)
     engine = ConversationEngine(settings=settings)
@@ -50,8 +52,9 @@ def chat(
         handle_turn(user_text)
 
 
-@app.command()
+@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
 def ingest_notes_cmd(
+    ctx: typer.Context,
     path: Path = typer.Argument(..., help="Not dizini"),
     config: Optional[Path] = typer.Option(
         None, "--config", "-c", help="Ayar dosyası (opsiyonel, yoksa varsayılan kullanılır)"
@@ -60,7 +63,8 @@ def ingest_notes_cmd(
         None, help="Ayar dosyası (opsiyonel, --config yerine kullanılabilir)", hidden=True
     ),
 ):
-    chosen_config = config or config_path or Path("config/settings.yaml")
+    extra_cfg = Path(ctx.args[0]) if ctx.args else None
+    chosen_config = config or config_path or extra_cfg or Path("config/settings.yaml")
     settings = load_settings(chosen_config)
     setup_logging(settings.paths.log_dir)
     engine = ConversationEngine(settings=settings)
@@ -73,8 +77,9 @@ def ingest_notes_cmd(
     console.print(f"{count} not eklendi")
 
 
-@app.command()
+@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
 def run_command(
+    ctx: typer.Context,
     command: str = typer.Argument(..., help="İzinli komut"),
     config: Optional[Path] = typer.Option(
         None, "--config", "-c", help="Ayar dosyası (opsiyonel, yoksa varsayılan kullanılır)"
@@ -83,15 +88,17 @@ def run_command(
         None, help="Ayar dosyası (opsiyonel, --config yerine kullanılabilir)", hidden=True
     ),
 ):
-    chosen_config = config or config_path or Path("config/settings.yaml")
+    extra_cfg = Path(ctx.args[0]) if ctx.args else None
+    chosen_config = config or config_path or extra_cfg or Path("config/settings.yaml")
     settings = load_settings(chosen_config)
     setup_logging(settings.paths.log_dir)
     output = run_allowed(command=command, allowlist_path=settings.security.allow_commands)
     console.print(output)
 
 
-@app.command()
+@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
 def profile(
+    ctx: typer.Context,
     config: Optional[Path] = typer.Option(
         None, "--config", "-c", help="Ayar dosyası (opsiyonel, yoksa varsayılan kullanılır)"
     ),
@@ -99,7 +106,8 @@ def profile(
         None, help="Ayar dosyası (opsiyonel, --config yerine kullanılabilir)", hidden=True
     ),
 ):
-    chosen_config = config or config_path or Path("config/settings.yaml")
+    extra_cfg = Path(ctx.args[0]) if ctx.args else None
+    chosen_config = config or config_path or extra_cfg or Path("config/settings.yaml")
     settings = load_settings(chosen_config)
     setup_logging(settings.paths.log_dir)
     engine = ConversationEngine(settings=settings)
