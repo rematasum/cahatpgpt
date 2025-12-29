@@ -49,12 +49,19 @@ class OllamaClient(BaseLLMClient):
         resp = requests.post(url, json=payload, timeout=300)
         resp.raise_for_status()
         if stream:
+            import json
+
             content_parts: list[str] = []
             for line in resp.iter_lines():
                 if not line:
                     continue
-                data = line.decode("utf-8")
-                content_parts.append(data)
+                try:
+                    chunk = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                piece = chunk.get("response")
+                if piece:
+                    content_parts.append(piece)
             text = "".join(content_parts)
         else:
             data = resp.json()
@@ -86,11 +93,21 @@ class LMStudioClient(BaseLLMClient):
         resp = requests.post(url, json=payload, timeout=300)
         resp.raise_for_status()
         if stream:
+            import json
+
             content_parts: list[str] = []
             for line in resp.iter_lines():
                 if not line:
                     continue
-                content_parts.append(line.decode("utf-8"))
+                try:
+                    chunk = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if "choices" in chunk:
+                    delta = chunk["choices"][0].get("delta", {})
+                    piece = delta.get("content")
+                    if piece:
+                        content_parts.append(piece)
             text = "".join(content_parts)
         else:
             data = resp.json()
