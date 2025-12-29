@@ -64,7 +64,7 @@ def ingest_notes_cmd(
     config_path: Optional[Path] = typer.Argument(
         None, help="Ayar dosyası (opsiyonel, --config yerine kullanılabilir)", hidden=True
     ),
-):
+    ):
     chosen_path = path or path_arg
     if not chosen_path:
         raise typer.BadParameter("Not dizini belirtilmeli (--path veya pozisyonel).")
@@ -73,7 +73,7 @@ def ingest_notes_cmd(
     setup_logging(settings.paths.log_dir)
     engine = ConversationEngine(settings=settings)
     count = ingest_notes(
-        root=path,
+        root=chosen_path,
         allowed_dirs=[settings.security.allow_notes_dir],
         store=engine.memory_store,
         embedder=engine.embedding,
