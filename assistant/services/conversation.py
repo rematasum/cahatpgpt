@@ -36,6 +36,7 @@ class ConversationEngine:
             backend=settings.embedding.backend,
             model_name=settings.embedding.model_name,
             device=settings.embedding.device,
+            base_url=settings.embedding.base_url,
         )
         self.reflections = ReflectionTracker(refresh_turns=settings.profile.refresh_turns)
 

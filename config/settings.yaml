@@ -11,9 +11,10 @@ llm:
   max_tokens: 512
   base_url: http://localhost:11434
 embedding:
-  backend: sentence_transformer  # sentence_transformer | dummy
-  model_name: intfloat/multilingual-e5-large
+  backend: ollama  # sentence_transformer | ollama | dummy
+  model_name: nomic-embed-text:latest
   device: auto  # cuda | cpu | auto
+  base_url: http://localhost:11434
 memory:
   top_k: 6
   min_similarity: 0.25

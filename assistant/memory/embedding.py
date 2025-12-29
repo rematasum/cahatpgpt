@@ -27,6 +27,22 @@ class DummyEmbedding(EmbeddingBackend):
         return [v / norm for v in vec]
 
 
+class OllamaEmbedding(EmbeddingBackend):
+    def __init__(self, base_url: str, model_name: str) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.model_name = model_name
+
+    def embed(self, text: str) -> list[float]:
+        requests = _require_requests()
+        url = f"{self.base_url}/api/embed"
+        payload = {"model": self.model_name, "input": text}
+        resp = requests.post(url, json=payload, timeout=120)
+        resp.raise_for_status()
+        data = resp.json()
+        embeddings = data.get("embeddings") or data.get("embedding") or []
+        return embeddings[0] if isinstance(embeddings, list) and embeddings else []
+
+
 def _load_sentence_transformer(model_name: str, device: str):
     try:
         from sentence_transformers import SentenceTransformer
@@ -55,7 +71,11 @@ class SentenceTransformerEmbedding(EmbeddingBackend):
         return vector.tolist()
 
 
-def build_embedding(backend: str, model_name: str, device: str) -> EmbeddingBackend:
+def build_embedding(
+    backend: str, model_name: str, device: str, base_url: str = "http://localhost:11434"
+) -> EmbeddingBackend:
+    if backend == "ollama":
+        return OllamaEmbedding(base_url=base_url, model_name=model_name)
     if backend == "sentence_transformer":
         try:
             return SentenceTransformerEmbedding(model_name=model_name, device=device)

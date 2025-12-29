@@ -22,9 +22,10 @@ class LLMSettings:
 
 @dataclass
 class EmbeddingSettings:
-    backend: Literal["sentence_transformer", "dummy"]
+    backend: Literal["sentence_transformer", "dummy", "ollama"]
     model_name: str
     device: Literal["cpu", "cuda", "auto"] = "auto"
+    base_url: str = "http://localhost:11434"
 
 
 @dataclass
