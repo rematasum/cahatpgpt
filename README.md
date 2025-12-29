@@ -36,7 +36,10 @@ python -m assistant.cli chat --config .\config\settings.yaml
 
 Yerel notları hafızaya almak için (varsayılan allowlist: `notes/`):
 ```powershell
+# Opsiyon 1 (flag):
 python -m assistant.cli ingest-notes --path .\notes
+# Opsiyon 2 (pozisyonel):
+python -m assistant.cli ingest-notes .\notes
 ```
 
 `ingest-notes` neden var? Not klasöründeki `.txt/.md` içerikleri semantik hafızaya ekler; böylece sohbet sırasında ilgili not parçaları bağlam olarak geri çağrılabilir.

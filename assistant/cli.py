@@ -52,12 +52,12 @@ def chat(
         handle_turn(user_text)
 
 
-@app.command(
-    "ingest-notes", context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
-)
+@app.command("ingest-notes")
 def ingest_notes_cmd(
-    ctx: typer.Context,
-    path: Path = typer.Argument(..., help="Not dizini"),
+    path: Optional[Path] = typer.Option(None, "--path", "-p", help="Not dizini"),
+    path_arg: Optional[Path] = typer.Argument(
+        None, help="Not dizini (opsiyonel pozisyonel kullanım için)"
+    ),
     config: Optional[Path] = typer.Option(
         None, "--config", "-c", help="Ayar dosyası (opsiyonel, yoksa varsayılan kullanılır)"
     ),
@@ -65,8 +65,10 @@ def ingest_notes_cmd(
         None, help="Ayar dosyası (opsiyonel, --config yerine kullanılabilir)", hidden=True
     ),
 ):
-    extra_cfg = Path(ctx.args[0]) if ctx.args else None
-    chosen_config = config or config_path or extra_cfg or Path("config/settings.yaml")
+    chosen_path = path or path_arg
+    if not chosen_path:
+        raise typer.BadParameter("Not dizini belirtilmeli (--path veya pozisyonel).")
+    chosen_config = config or config_path or Path("config/settings.yaml")
     settings = load_settings(chosen_config)
     setup_logging(settings.paths.log_dir)
     engine = ConversationEngine(settings=settings)
