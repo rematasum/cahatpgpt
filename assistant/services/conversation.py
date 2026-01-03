@@ -8,9 +8,9 @@ from assistant.llm.prompts import build_system_prompt, build_user_prompt
 from assistant.memory.embedding import EmbeddingBackend, build_embedding
 from assistant.memory.store import MemoryStore
 from assistant.memory.temporal import choose_temporal_truth, decay_confidence, format_memory_snippet
+from assistant.memory.cognee import build_cognee_client, DummyCogneeClient
 from assistant.services.profiling import ReflectionTracker
 from assistant.typing import MemoryKind
-from assistant.utils import now_ts
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +37,11 @@ class ConversationEngine:
             model_name=settings.embedding.model_name,
             device=settings.embedding.device,
             base_url=settings.embedding.base_url,
+        )
+        # Cognee stub (future integration)
+        cognee_cfg = getattr(settings, "cognee", {}) or {}
+        self.cognee = build_cognee_client(
+            enabled=cognee_cfg.get("enabled", False), endpoint=cognee_cfg.get("endpoint")
         )
         self.reflections = ReflectionTracker(refresh_turns=settings.profile.refresh_turns)
 
@@ -71,6 +76,10 @@ class ConversationEngine:
         snippets = [format_memory_snippet(mem) for mem, _score in results]
         return snippets
 
+    def _working_memory(self) -> list[str]:
+        msgs = self.memory_store.last_messages(limit=self.settings.working.window)
+        return [f"{role}: {content}" for role, content in msgs]
+
     def _update_temporal_truth(self, content: str, topic: str | None) -> None:
         if not topic:
             return
@@ -96,9 +105,22 @@ class ConversationEngine:
         logger.info("User input: %s", user_input)
         self.memory_store.add_message(role="user", content=user_input)
         context_snippets = self.retrieve_context(user_input)
+        working_memory = self._working_memory()
+        procedural_rules = self.settings.procedural.rules or []
+        cognee_snippets: list[str] = []
+        try:
+            cognee_snippets = self.cognee.query(user_input, top_k=self.settings.memory.top_k)  # type: ignore[arg-type]
+        except Exception as exc:  # pragma: no cover - optional path
+            logger.debug("Cognee query skipped: %s", exc)
         reflections = self.reflections.reflections or []
         system_prompt = build_system_prompt(self.settings.ui.system_prompt, reflections)
-        user_prompt = build_user_prompt(user_input, context_snippets)
+        user_prompt = build_user_prompt(
+            user_input=user_input,
+            working_memory=working_memory,
+            retrieved_memories=context_snippets,
+            procedural_rules=procedural_rules,
+            cognee_snippets=cognee_snippets,
+        )
         response = self.llm_client.generate(
             system_prompt=system_prompt,
             user_prompt=user_prompt,

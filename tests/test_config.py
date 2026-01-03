@@ -27,6 +27,8 @@ def test_load_settings(tmp_path: Path):
           min_similarity: 0.1
           decay_halflife_days: 10
           temporal_truth_key: topic
+        working:
+          window: 3
         profile:
           refresh_turns: 2
           summary_max_tokens: 10
@@ -36,6 +38,11 @@ def test_load_settings(tmp_path: Path):
         ui:
           stream: false
           system_prompt: test
+        procedural:
+          rules:
+            - test kural
+        cognee:
+          enabled: false
         """,
         encoding="utf-8",
     )
@@ -43,3 +50,5 @@ def test_load_settings(tmp_path: Path):
     assert settings.environment == "test"
     assert settings.paths.data_dir.exists()
     assert settings.paths.db_file.parent.exists()
+    assert settings.working.window == 3
+    assert settings.procedural.rules == ["test kural"]

@@ -6,14 +6,14 @@
 - **Riskler**: Model bağımlılıkları offline indirilmeli; Windows PATH (Ollama) ayarları.
 
 ## Faz 1: Metin Asistan + Hafıza + Tool'lar
-- **Hedefler**: Ollama/LM Studio entegrasyonu; embedding tabanlı episodik/semantik hafıza; temporal truth skorlaması; not ingest; güvenli komut allowlist; profil çıkarımı; TUI/CLI akışı.
+- **Hedefler**: Ollama/LM Studio entegrasyonu; embedding tabanlı episodik/semantik hafıza; temporal truth skorlaması; working memory (son mesajlar); procedural kurallar; not ingest; güvenli komut allowlist; profil çıkarımı; TUI/CLI akışı.
 - **Done kriterleri**: LLM yanıtı kontekste göre; ilgili anılar çağrılır; hafıza meta verisi (zaman, kaynak, güven) kaydedilir; not ingest komutu çalışır; profil komutu çalışır.
 - **Riskler**: GPU bellek (embedding+LLM aynı anda); uzun bağlam maliyeti; yanlış geri çağırma; güvenlik: allowlist dışı dosya/komut yok.
 
-## Faz 1.5: Derin Kişiselleştirme + Temporal Memory
-- **Hedefler**: Özetleme katmanı (günlük/haftalık); unutma/decay heuristiği; temporal truth sürümleme (aynı konu için yeni gerçek daha yüksek skor); kaynak takibi; “Mustafa için nasıl daha faydalı olurum?” yansıması.
-- **Done kriterleri**: Özet çıktıları dosyada; decay cron/manuel komut; temporal sürümleme tablosu; rapor komutu; güven skoru güncellenir.
-- **Riskler**: Özetleme modeli maliyeti; yanlış decay; veri şişmesi; senkronizasyon.
+## Faz 1.5: Derin Kişiselleştirme + Temporal Memory + Cognee
+- **Hedefler**: Özetleme katmanı (günlük/haftalık); unutma/decay heuristiği; temporal truth sürümleme (aynı konu için yeni gerçek daha yüksek skor); Cognee graph entegrasyonu (semantik/episodik ilişkiler); “Mustafa için nasıl daha faydalı olurum?” yansıması.
+- **Done kriterleri**: Özet çıktıları dosyada; decay cron/manuel komut; temporal sürümleme tablosu; Cognee sorgusu ile ilişkili anılar dönebiliyor; güven skoru güncellenir.
+- **Riskler**: Özetleme modeli maliyeti; yanlış decay; veri şişmesi; senkronizasyon; Cognee endpoint erişimi.
 
 ## Faz 2: Ses (Tasarım)
 - **Hedefler**: Mikrofondan dinleme, wake-word, TTS; güvenlik/şifreleme tasarımı; pasif dinleme risk kontrolü; retention politikası.

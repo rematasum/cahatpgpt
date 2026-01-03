@@ -37,6 +37,16 @@ class MemorySettings:
 
 
 @dataclass
+class WorkingMemorySettings:
+    window: int = 6
+
+
+@dataclass
+class ProceduralSettings:
+    rules: list[str] | None = None
+
+
+@dataclass
 class ProfileSettings:
     refresh_turns: int = 5
     summary_max_tokens: int = 256
@@ -61,9 +71,12 @@ class Settings:
     llm: LLMSettings
     embedding: EmbeddingSettings
     memory: MemorySettings
+    working: WorkingMemorySettings
     profile: ProfileSettings
     security: SecuritySettings
     ui: UISettings
+    procedural: ProceduralSettings
+    cognee: dict | None = None
 
     @classmethod
     def from_dict(cls, data: dict) -> "Settings":
@@ -73,9 +86,12 @@ class Settings:
             llm=LLMSettings(**data["llm"]),
             embedding=EmbeddingSettings(**data["embedding"]),
             memory=MemorySettings(**data["memory"]),
+            working=WorkingMemorySettings(**data.get("working", {})),
             profile=ProfileSettings(**data["profile"]),
             security=SecuritySettings(**_map_path_fields(data["security"])),
             ui=UISettings(**data["ui"]),
+            procedural=ProceduralSettings(**data.get("procedural", {})),
+            cognee=data.get("cognee"),
         )
 
     def ensure_dirs(self) -> None:

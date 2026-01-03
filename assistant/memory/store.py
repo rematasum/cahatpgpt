@@ -81,6 +81,14 @@ class MemoryStore:
         logger.debug("Added memory %s (%s)", memory_id, kind)
         return int(memory_id)
 
+    def last_messages(self, limit: int = 6) -> list[tuple[str, str]]:
+        cur = self.conn.execute(
+            "SELECT role, content FROM messages ORDER BY id DESC LIMIT ?", (limit,)
+        )
+        rows = cur.fetchall()
+        rows.reverse()
+        return [(r[0], r[1]) for r in rows]
+
     def list_memories(self, kinds: Iterable[MemoryKind]) -> list[MemoryRecord]:
         placeholders = ",".join("?" for _ in kinds)
         cur = self.conn.execute(

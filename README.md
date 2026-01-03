@@ -49,6 +49,13 @@ Profil özetini görmek için:
 python -m assistant.cli profile
 ```
 
+### Hafıza Katmanları (agentik yapı)
+- **Working Memory**: Son birkaç mesajlık kısa bağlam (ayar: `working.window`).
+- **Episodic Memory**: Geçmiş sohbet turları, zaman ve kaynakla kayıtlı.
+- **Semantic Memory**: Not ingest (`ingest-notes`) ile eklenen bilgi parçaları.
+- **Temporal Truth**: Zamanla güncellenen gerçekler; yeniler eskilere göre daha yüksek güvenle tutulur.
+- **Procedural Memory**: Etkileşim kuralları ve beceriler (ayar: `procedural.rules`).
+
 ## Konfigürasyon
 - `config/settings.yaml`: Ortam, model ve hafıza ayarları.
 - `config/allowlist.yaml`: Güvenli komut/klasör listesi.

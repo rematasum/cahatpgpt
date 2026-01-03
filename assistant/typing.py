@@ -1,6 +1,8 @@
 from typing import Literal, TypedDict
 
-MemoryKind = Literal["episodic", "semantic", "temporal_truth"]
+MemoryKind = Literal[
+    "working", "episodic", "semantic", "temporal_truth", "procedural"
+]
 
 
 class MemoryRecord(TypedDict):

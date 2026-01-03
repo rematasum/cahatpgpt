@@ -33,7 +33,7 @@ def chat(
     extra_cfg = Path(ctx.args[0]) if ctx.args else None
     chosen_config = config or config_path or extra_cfg or Path("config/settings.yaml")
     settings = load_settings(chosen_config)
-    setup_logging(settings.paths.log_dir)
+    setup_logging(settings.paths.log_dir, environment=settings.environment)
     engine = ConversationEngine(settings=settings)
     console.print(Panel("Mustafa'nın Yerel Asistanı - Tek Akış Sohbet"))
 
@@ -70,7 +70,7 @@ def ingest_notes_cmd(
         raise typer.BadParameter("Not dizini belirtilmeli (--path veya pozisyonel).")
     chosen_config = config or config_path or Path("config/settings.yaml")
     settings = load_settings(chosen_config)
-    setup_logging(settings.paths.log_dir)
+    setup_logging(settings.paths.log_dir, environment=settings.environment)
     engine = ConversationEngine(settings=settings)
     count = ingest_notes(
         root=chosen_path,
@@ -95,7 +95,7 @@ def run_command(
     extra_cfg = Path(ctx.args[0]) if ctx.args else None
     chosen_config = config or config_path or extra_cfg or Path("config/settings.yaml")
     settings = load_settings(chosen_config)
-    setup_logging(settings.paths.log_dir)
+    setup_logging(settings.paths.log_dir, environment=settings.environment)
     output = run_allowed(command=command, allowlist_path=settings.security.allow_commands)
     console.print(output)
 
@@ -113,7 +113,7 @@ def profile(
     extra_cfg = Path(ctx.args[0]) if ctx.args else None
     chosen_config = config or config_path or extra_cfg or Path("config/settings.yaml")
     settings = load_settings(chosen_config)
-    setup_logging(settings.paths.log_dir)
+    setup_logging(settings.paths.log_dir, environment=settings.environment)
     engine = ConversationEngine(settings=settings)
     summary = engine.profile_summary()
     console.print(summary)

@@ -10,6 +10,8 @@
 - [ ] Ollama/LM Studio modeli çağrılıyor, Türkçe çıktı veriyor.
 - [ ] Embedding modeli lokal yüklendi, anı aramaları çalışıyor.
 - [ ] Episodic/semantic kayıtlar timestamp, kaynak, güven skoru ile kaydediliyor.
+- [ ] Working memory son mesajları prompta ekliyor (window ayarlanabilir).
+- [ ] Procedural kurallar prompta ekleniyor.
 - [ ] `ingest-notes` komutu allowlist içindeki dosyaları hafızaya ekliyor.
 - [ ] Profil çıkarımı `profile` komutuyla okunabiliyor.
 - [ ] Komut çalıştırma sadece `config/allowlist.yaml` izin verdiği komutları kullanıyor.

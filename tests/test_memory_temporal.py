@@ -29,6 +29,8 @@ memory:
   min_similarity: 0.0
   decay_halflife_days: 30
   temporal_truth_key: topic
+working:
+  window: 4
 profile:
   refresh_turns: 2
   summary_max_tokens: 64
@@ -38,6 +40,11 @@ security:
 ui:
   stream: false
   system_prompt: test prompt
+procedural:
+  rules:
+    - test rule
+cognee:
+  enabled: false
 """,
         encoding="utf-8",
     )
@@ -66,3 +73,17 @@ def test_retrieve_context_returns_snippet(tmp_path: Path):
     snippets = engine.retrieve_context("moral")
 
     assert snippets, "retrieve_context en az bir özet döndürmeli"
+
+
+def test_working_memory_window(tmp_path: Path):
+    cfg = _write_settings(tmp_path)
+    settings = load_settings(cfg)
+    engine = ConversationEngine(settings=settings, db_path=tmp_path / "memory.sqlite")
+
+    engine.chat("Mesaj 1")
+    engine.chat("Mesaj 2")
+    engine.chat("Mesaj 3")
+    window = engine.settings.working.window
+    working = engine.memory_store.last_messages(limit=window)
+    assert len(working) <= window
+    assert {r for r, _ in working}.issubset({"user", "assistant"})

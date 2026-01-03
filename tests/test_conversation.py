@@ -29,6 +29,8 @@ def test_chat_flow(tmp_path: Path):
           min_similarity: 0.0
           decay_halflife_days: 30
           temporal_truth_key: topic
+        working:
+          window: 4
         profile:
           refresh_turns: 2
           summary_max_tokens: 64
@@ -38,6 +40,11 @@ def test_chat_flow(tmp_path: Path):
         ui:
           stream: false
           system_prompt: test prompt
+        procedural:
+          rules:
+            - test rule
+        cognee:
+          enabled: false
         """,
         encoding="utf-8",
     )

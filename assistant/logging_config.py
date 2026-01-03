@@ -3,9 +3,11 @@ import logging.config
 from pathlib import Path
 
 
-def setup_logging(log_dir: Path) -> None:
+def setup_logging(log_dir: Path, environment: str = "dev") -> None:
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / "assistant.log"
+
+    console_level = "DEBUG" if environment == "dev" else "INFO"
 
     config = {
         "version": 1,
@@ -19,7 +21,7 @@ def setup_logging(log_dir: Path) -> None:
             "console": {
                 "class": "logging.StreamHandler",
                 "formatter": "standard",
-                "level": "INFO",
+                "level": console_level,
             },
             "file": {
                 "class": "logging.FileHandler",
@@ -31,7 +33,7 @@ def setup_logging(log_dir: Path) -> None:
         },
         "root": {
             "handlers": ["console", "file"],
-            "level": "INFO",
+            "level": "DEBUG" if environment == "dev" else "INFO",
         },
     }
 
