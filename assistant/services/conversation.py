@@ -63,7 +63,7 @@ class ConversationEngine:
             topic=topic,
         )
 
-    def retrieve_context(self, query: str) -> list[str]:
+    def retrieve_context(self, query: str, verbose: bool = False) -> list[str]:
         query_vec = self.embedding.embed(query)
         kinds: Iterable[MemoryKind] = ["episodic", "semantic", "temporal_truth"]
         results = self.memory_store.topk_similar(
@@ -74,6 +74,8 @@ class ConversationEngine:
             decay_halflife_days=self.settings.memory.decay_halflife_days,
         )
         snippets = [format_memory_snippet(mem) for mem, _score in results]
+        if verbose:
+            logger.info("VERBOSE retrieve_context results:\n%s", "\n".join(snippets) or "- boş -")
         return snippets
 
     def _working_memory(self) -> list[str]:
@@ -101,10 +103,10 @@ class ConversationEngine:
             topic=topic,
         )
 
-    def chat(self, user_input: str) -> LLMResponse:
+    def chat(self, user_input: str, verbose: bool = False) -> LLMResponse:
         logger.info("User input: %s", user_input)
         self.memory_store.add_message(role="user", content=user_input)
-        context_snippets = self.retrieve_context(user_input)
+        context_snippets = self.retrieve_context(user_input, verbose=verbose)
         working_memory = self._working_memory()
         procedural_rules = self.settings.procedural.rules or []
         cognee_snippets: list[str] = []
@@ -112,6 +114,11 @@ class ConversationEngine:
             cognee_snippets = self.cognee.query(user_input, top_k=self.settings.memory.top_k)  # type: ignore[arg-type]
         except Exception as exc:  # pragma: no cover - optional path
             logger.debug("Cognee query skipped: %s", exc)
+        if verbose:
+            logger.info("VERBOSE working_memory: %s", working_memory)
+            logger.info("VERBOSE procedural_rules: %s", procedural_rules)
+            if cognee_snippets:
+                logger.info("VERBOSE cognee_snippets: %s", cognee_snippets)
         reflections = self.reflections.reflections or []
         system_prompt = build_system_prompt(self.settings.ui.system_prompt, reflections)
         user_prompt = build_user_prompt(
@@ -121,6 +128,8 @@ class ConversationEngine:
             procedural_rules=procedural_rules,
             cognee_snippets=cognee_snippets,
         )
+        if verbose:
+            logger.info("VERBOSE user_prompt:\n%s", user_prompt)
         response = self.llm_client.generate(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
@@ -135,6 +144,8 @@ class ConversationEngine:
         )
         self._update_temporal_truth(content=user_input, topic=self.settings.memory.temporal_truth_key)
         self.reflections.maybe_add_reflection("Kullanıcıyla daha derin bağ kurma önerisi üret")
+        if verbose:
+            logger.info("VERBOSE LLM response:\n%s", response.content)
         return response
 
     def profile_summary(self) -> str:

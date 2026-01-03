@@ -29,6 +29,7 @@ def chat(
     message: Optional[str] = typer.Option(
         None, help="Tek seferlik mesaj (boşsa etkileşimli mod)"
     ),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="LLM ve hafıza adımlarını ayrıntılı göster"),
 ):
     extra_cfg = Path(ctx.args[0]) if ctx.args else None
     chosen_config = config or config_path or extra_cfg or Path("config/settings.yaml")
@@ -38,7 +39,7 @@ def chat(
     console.print(Panel("Mustafa'nın Yerel Asistanı - Tek Akış Sohbet"))
 
     def handle_turn(user_text: str) -> None:
-        response = engine.chat(user_text)
+        response = engine.chat(user_text, verbose=verbose)
         console.print(f"[bold green]Asistan:[/bold green] {response.content}")
 
     if message:
