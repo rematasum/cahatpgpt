@@ -1,0 +1,17 @@
+[project]
+name = "mustafa-assistant"
+version = "0.1.0"
+description = "Offline-first personal AI assistant for Mustafa"
+authors = [{name = "Mustafa"}]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
