@@ -34,7 +34,7 @@ def chat(
     extra_cfg = Path(ctx.args[0]) if ctx.args else None
     chosen_config = config or config_path or extra_cfg or Path("config/settings.yaml")
     settings = load_settings(chosen_config)
-    setup_logging(settings.paths.log_dir, environment=settings.environment)
+    setup_logging(settings.paths.log_dir, environment=settings.environment, verbose=verbose)
     engine = ConversationEngine(settings=settings)
     console.print(Panel("Mustafa'nın Yerel Asistanı - Tek Akış Sohbet"))
 

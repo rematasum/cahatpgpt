@@ -6,7 +6,7 @@ paths:
   summaries_dir: data/summaries
 llm:
   provider: ollama  # ollama | lmstudio | dummy
-  model: aya-expanse:8b
+  model: ministral-3:8b
   temperature: 0.6
   max_tokens: 512
   base_url: http://localhost:11434

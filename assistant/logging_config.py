@@ -5,11 +5,11 @@ from pathlib import Path
 from rich.logging import RichHandler
 
 
-def setup_logging(log_dir: Path, environment: str = "dev") -> None:
+def setup_logging(log_dir: Path, environment: str = "dev", verbose: bool = False) -> None:
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / "assistant.log"
 
-    console_level = "DEBUG" if environment == "dev" else "INFO"
+    console_level = "DEBUG" if verbose else "INFO"
 
     config = {
         "version": 1,
@@ -38,7 +38,7 @@ def setup_logging(log_dir: Path, environment: str = "dev") -> None:
         },
         "root": {
             "handlers": ["console", "file"],
-            "level": "DEBUG" if environment == "dev" else "INFO",
+            "level": "DEBUG" if verbose else "INFO",
         },
     }
 
