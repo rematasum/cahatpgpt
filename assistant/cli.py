@@ -10,6 +10,7 @@ from rich.panel import Panel
 from assistant.config.loader import load_settings
 from assistant.logging_config import setup_logging
 from assistant.services.conversation import ConversationEngine
+from assistant.services.summaries import decay_report, summarize_period, temporal_truth_report
 from assistant.tools.notes import ingest_notes
 from assistant.tools.commands import run_allowed
 
@@ -78,6 +79,7 @@ def ingest_notes_cmd(
         allowed_dirs=[settings.security.allow_notes_dir],
         store=engine.memory_store,
         embedder=engine.embedding,
+        cognee=engine.cognee,
     )
     console.print(f"{count} not eklendi")
 
@@ -110,14 +112,65 @@ def profile(
     config_path: Optional[Path] = typer.Argument(
         None, help="Ayar dosyası (opsiyonel, --config yerine kullanılabilir)", hidden=True
     ),
+    report: bool = typer.Option(False, "--report", help="Kaynak ve konu detaylı profil raporu"),
 ):
     extra_cfg = Path(ctx.args[0]) if ctx.args else None
     chosen_config = config or config_path or extra_cfg or Path("config/settings.yaml")
     settings = load_settings(chosen_config)
     setup_logging(settings.paths.log_dir, environment=settings.environment)
     engine = ConversationEngine(settings=settings)
-    summary = engine.profile_summary()
+    summary = engine.profile_summary(verbose=report)
     console.print(summary)
+
+
+@app.command()
+def summaries(
+    period: str = typer.Option(
+        "daily",
+        "--period",
+        "-p",
+        help="daily veya weekly özet",
+        show_default=True,
+    ),
+    include_decay: bool = typer.Option(False, "--decay", help="Decay raporunu da üret"),
+    include_temporal: bool = typer.Option(
+        False, "--temporal-truth", help="Temporal truth sürüm tablosunu da yaz"
+    ),
+    config: Optional[Path] = typer.Option(
+        None, "--config", "-c", help="Ayar dosyası (opsiyonel, yoksa varsayılan kullanılır)"
+    ),
+):
+    chosen_config = config or Path("config/settings.yaml")
+    settings = load_settings(chosen_config)
+    setup_logging(settings.paths.log_dir, environment=settings.environment)
+    engine = ConversationEngine(settings=settings)
+    normalized_period = period.lower()
+    if normalized_period not in {"daily", "weekly"}:
+        raise typer.BadParameter("period daily veya weekly olmalı")
+
+    summary_path = summarize_period(
+        store=engine.memory_store,
+        llm=engine.llm_client,
+        period=normalized_period,
+        summaries_dir=settings.paths.summaries_dir,
+        max_tokens=settings.profile.summary_max_tokens,
+    )
+    console.print(f"Özet oluşturuldu: {summary_path}")
+    if include_decay:
+        decay_path = decay_report(
+            store=engine.memory_store,
+            summaries_dir=settings.paths.summaries_dir,
+            decay_halflife_days=settings.memory.decay_halflife_days,
+            label=normalized_period,
+        )
+        console.print(f"Decay raporu: {decay_path}")
+    if include_temporal:
+        temporal_path = temporal_truth_report(
+            store=engine.memory_store,
+            summaries_dir=settings.paths.summaries_dir,
+            decay_halflife_days=settings.memory.decay_halflife_days,
+        )
+        console.print(f"Temporal truth raporu: {temporal_path}")
 
 
 @app.command()

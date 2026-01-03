@@ -17,11 +17,11 @@
 - [ ] Komut çalıştırma sadece `config/allowlist.yaml` izin verdiği komutları kullanıyor.
 
 ## Faz 1.5
-- [ ] Günlük/haftalık özetleme çıktıları `data/summaries/` içine yazılıyor.
-- [ ] Decay/forget heuristiği çalışıyor (skor güncelleniyor).
-- [ ] Temporal truth sürümleme tabloları güncel.
-- [ ] Kaynak takibi raporu alınabiliyor (`profile --report`).
-- [ ] Yansıma mesajı düzenli olarak LLM sistem promptunda.
+- [x] Günlük/haftalık özetleme çıktıları `data/summaries/` içine yazılıyor.
+- [x] Decay/forget heuristiği çalışıyor (skor güncelleniyor).
+- [x] Temporal truth sürümleme tabloları güncel.
+- [x] Kaynak takibi raporu alınabiliyor (`profile --report`).
+- [x] Yansıma mesajı düzenli olarak LLM sistem promptunda.
 
 ## Faz 2 (Tasarım)
 - [ ] STT/TTS bileşenleri için modül taslakları yazıldı.
