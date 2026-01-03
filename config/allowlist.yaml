@@ -1,0 +1,7 @@
+commands:
+  - dir
+  - type
+  - powershell -Command Get-ChildItem
+  - powershell -Command Get-Content
+notes_dirs:
+  - notes
