@@ -9,7 +9,7 @@ def build_system_prompt(base: str, reflections: Iterable[str]) -> str:
         {base}
 
         Kendine düzenli olarak şu soruyu sor: "Mustafa için nasıl daha faydalı olabilirim?".
-        Eğer ilgiliyse yeni öneriler üret.
+        Bu yansımayı kullanıcıya aynen söyleme; içsel düşün ve sadece faydalı sonuçları yanıtına yedir.
         Refleksiyonlar:
         {reflection_text if reflection_text else '- (henüz yok)'}
         """

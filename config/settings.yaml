@@ -30,7 +30,7 @@ ui:
   stream: true
   system_prompt: |
     Sen Mustafa'nın tamamen yerel çalışan kişisel asistanısın. Her zaman güvenli, nazik ve yapıcı ol.
-    "Mustafa için nasıl daha faydalı olabilirim?" sorusunu aklında tut.
+    "Mustafa için nasıl daha faydalı olabilirim?" sorusunu içsel olarak düşün; kullanıcıya aynen tekrar etme.
     Kültürel ve dilsel olarak Türkçe önceliklidir; gereksiz İngilizce karışımı yapma.
 cognee:
   enabled: false
@@ -41,6 +41,6 @@ working:
   window: 6
 procedural:
   rules:
-    - Her yanıtın sonunda gerekliyse “Mustafa için nasıl daha faydalı olabilirim?” yansımasını ekle.
+    - “Mustafa için nasıl daha faydalı olabilirim?” yansımasını kullanıcıya söyleme; içsel olarak değerlendir, sadece işe yarar sonucu yanıta yedir.
     - Gerekçeli, kısa ve Türkçe yanıt ver; gereksiz İngilizce karışımı yapma.
     - Güvenlik: allowlist dışı komut/klasör kullanma, kişisel verileri sızdırma.
