@@ -1,0 +1,46 @@
+environment: dev
+paths:
+  data_dir: data
+  db_file: data/memory.sqlite
+  log_dir: logs
+  summaries_dir: data/summaries
+llm:
+  provider: ollama  # ollama | lmstudio | dummy
+  model: aya-expanse:8b
+  temperature: 0.6
+  max_tokens: 512
+  base_url: http://localhost:11434
+embedding:
+  backend: ollama  # sentence_transformer | ollama | dummy
+  model_name: nomic-embed-text:latest
+  device: auto  # cuda | cpu | auto
+  base_url: http://localhost:11434
+memory:
+  top_k: 6
+  min_similarity: 0.25
+  decay_halflife_days: 30
+  temporal_truth_key: topic
+profile:
+  refresh_turns: 5
+  summary_max_tokens: 256
+security:
+  allow_notes_dir: notes
+  allow_commands: config/allowlist.yaml
+ui:
+  stream: true
+  system_prompt: |
+    Sen Mustafa'nın tamamen yerel çalışan kişisel asistanısın. Her zaman güvenli, nazik ve yapıcı ol.
+    "Mustafa için nasıl daha faydalı olabilirim?" sorusunu aklında tut.
+    Kültürel ve dilsel olarak Türkçe önceliklidir; gereksiz İngilizce karışımı yapma.
+cognee:
+  enabled: false
+  notes_ingest_graph: null
+  memory_graph: null
+  endpoint: http://localhost:8000
+working:
+  window: 6
+procedural:
+  rules:
+    - Her yanıtın sonunda gerekliyse “Mustafa için nasıl daha faydalı olabilirim?” yansımasını ekle.
+    - Gerekçeli, kısa ve Türkçe yanıt ver; gereksiz İngilizce karışımı yapma.
+    - Güvenlik: allowlist dışı komut/klasör kullanma, kişisel verileri sızdırma.
