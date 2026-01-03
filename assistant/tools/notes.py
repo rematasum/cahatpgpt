@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 from typing import Iterable
 
+from assistant.memory.cognee import CogneeClient
 from assistant.memory.store import MemoryStore
 from assistant.memory.embedding import EmbeddingBackend
 from assistant.typing import MemoryKind
@@ -14,6 +15,7 @@ def ingest_notes(
     allowed_dirs: Iterable[Path],
     store: MemoryStore,
     embedder: EmbeddingBackend,
+    cognee: CogneeClient | None = None,
 ) -> int:
     root = root.resolve()
     allowed = [d.resolve() for d in allowed_dirs]
@@ -32,6 +34,11 @@ def ingest_notes(
                 confidence=0.7,
                 topic=path.stem,
             )
+            if cognee:
+                try:
+                    cognee.ingest_note(text=text, metadata={"source": str(path)})
+                except Exception as exc:  # pragma: no cover - optional external path
+                    logger.debug("Cognee ingest hata: %s", exc)
             count += 1
     logger.info("%s not dosyası eklendi", count)
     return count

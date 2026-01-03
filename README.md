@@ -47,6 +47,13 @@ python -m assistant.cli ingest-notes .\notes
 Profil özetini görmek için:
 ```powershell
 python -m assistant.cli profile
+# Kaynak dağılımlı detaylı profil:
+python -m assistant.cli profile --report
+```
+
+Günlük/haftalık özet, decay ve temporal truth raporları için:
+```powershell
+python -m assistant.cli summaries --period daily --decay --temporal-truth
 ```
 
 ### Hafıza Katmanları (agentik yapı)

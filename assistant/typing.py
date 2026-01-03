@@ -14,3 +14,4 @@ class MemoryRecord(TypedDict):
     source: str
     confidence: float
     topic: str | None
+    metadata: dict[str, object] | None

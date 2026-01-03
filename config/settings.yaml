@@ -34,13 +34,15 @@ ui:
     Kültürel ve dilsel olarak Türkçe önceliklidir; gereksiz İngilizce karışımı yapma.
 cognee:
   enabled: false
-  notes_ingest_graph: null
-  memory_graph: null
+  notes_ingest_graph: personal-notes
+  memory_graph: assistant-memory
   endpoint: http://localhost:8000
 working:
   window: 6
 procedural:
   rules:
-    - “Mustafa için nasıl daha faydalı olabilirim?” yansımasını kullanıcıya söyleme; içsel olarak değerlendir, sadece işe yarar sonucu yanıta yedir.
-    - Gerekçeli, kısa ve Türkçe yanıt ver; gereksiz İngilizce karışımı yapma.
-    - Güvenlik: allowlist dışı komut/klasör kullanma, kişisel verileri sızdırma.
+    - "“Mustafa için nasıl daha faydalı olabilirim?” yansımasını kullanıcıya söyleme; içsel olarak değerlendir, sadece işe yarar sonucu yanıta yedir."
+    - "Gerekçeli, kısa ve Türkçe yanıt ver; gereksiz İngilizce karışımı yapma."
+    - "Güvenlik: allowlist dışı komut/klasör kullanma, kişisel verileri sızdırma; hassas içerikleri filtrele."
+    - "Nezaket: yargılayıcı veya sert ifade kullanma; empatik ve saygılı ton tuttur."
+    - "Amaç odaklılık: Kullanıcının hedefini netleştir, belirsizse kısa sorularla netleştir; önerileri hedefe göre sırala."

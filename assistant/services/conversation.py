@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 from assistant.config.schemas import Settings
 from assistant.llm.clients import BaseLLMClient, LLMResponse, build_client
@@ -9,7 +9,7 @@ from assistant.memory.embedding import EmbeddingBackend, build_embedding
 from assistant.memory.store import MemoryStore
 from assistant.memory.temporal import choose_temporal_truth, decay_confidence, format_memory_snippet
 from assistant.memory.cognee import build_cognee_client, DummyCogneeClient
-from assistant.services.profiling import ReflectionTracker
+from assistant.services.profiling import ReflectionTracker, build_profile, build_profile_report
 from assistant.typing import MemoryKind
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,10 @@ class ConversationEngine:
         # Cognee stub (future integration)
         cognee_cfg = getattr(settings, "cognee", {}) or {}
         self.cognee = build_cognee_client(
-            enabled=cognee_cfg.get("enabled", False), endpoint=cognee_cfg.get("endpoint")
+            enabled=cognee_cfg.get("enabled", False),
+            endpoint=cognee_cfg.get("endpoint"),
+            notes_graph=cognee_cfg.get("notes_ingest_graph"),
+            memory_graph=cognee_cfg.get("memory_graph"),
         )
         self.reflections = ReflectionTracker(refresh_turns=settings.profile.refresh_turns)
 
@@ -52,6 +55,7 @@ class ConversationEngine:
         source: str,
         confidence: float = 0.6,
         topic: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> int:
         embedding = self.embedding.embed(content)
         return self.memory_store.add_memory(
@@ -61,6 +65,7 @@ class ConversationEngine:
             source=source,
             confidence=confidence,
             topic=topic,
+            metadata=metadata,
         )
 
     def retrieve_context(self, query: str, verbose: bool = False) -> list[str]:
@@ -95,12 +100,17 @@ class ConversationEngine:
                 half_life_days=self.settings.memory.decay_halflife_days,
             )
             mem["confidence"] = decayed
+        existing_versions = [
+            (mem.get("metadata") or {}).get("version", 0) for mem in same_topic  # type: ignore[arg-type]
+        ]
+        next_version = max([0, *[int(v or 0) for v in existing_versions]]) + 1
         self.ingest_memory(
             kind="temporal_truth",
             content=content,
             source="conversation",
             confidence=new_conf,
             topic=topic,
+            metadata={"version": next_version, "supersedes": [m["id"] for m in same_topic if m.get("id")]},
         )
 
     def chat(self, user_input: str, verbose: bool = False) -> LLMResponse:
@@ -142,15 +152,27 @@ class ConversationEngine:
             source="conversation",
             confidence=0.6,
         )
+        try:
+            self.cognee.ingest_note(
+                text=f"Kullanıcı: {user_input}\nAsistan: {response.content}",
+                metadata={"kind": "episodic", "source": "conversation"},
+            )
+        except Exception as exc:  # pragma: no cover - optional external path
+            logger.debug("Cognee ingest atlandı: %s", exc)
         self._update_temporal_truth(content=user_input, topic=self.settings.memory.temporal_truth_key)
         self.reflections.maybe_add_reflection("Kullanıcıyla daha derin bağ kurma önerisi üret")
         if verbose:
             logger.info("VERBOSE LLM response:\n%s", response.content)
         return response
 
-    def profile_summary(self) -> str:
+    def profile_summary(self, verbose: bool = False) -> str:
         memories = self.memory_store.list_memories(["episodic", "semantic", "temporal_truth"])
         chosen = choose_temporal_truth(memories)
         lines = ["Temporal hafıza özetleri:"]
         lines.extend(format_memory_snippet(mem) for mem in chosen[:5])
+        lines.append("")
+        lines.append(build_profile(memories))
+        if verbose:
+            lines.append("")
+            lines.append(build_profile_report(memories))
         return "\n".join(lines)
