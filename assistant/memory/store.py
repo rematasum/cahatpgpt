@@ -90,15 +90,18 @@ class MemoryStore:
         return [(r[0], r[1]) for r in rows]
 
     def list_memories(self, kinds: Iterable[MemoryKind]) -> list[MemoryRecord]:
+        kinds = list(kinds)
         placeholders = ",".join("?" for _ in kinds)
         cur = self.conn.execute(
-            f"SELECT id, kind, content, embedding, created_at, source, confidence, topic FROM memories WHERE kind IN ({placeholders})",
+            f"""SELECT id, kind, content, embedding, created_at, source, confidence, topic, metadata
+            FROM memories WHERE kind IN ({placeholders})""",
             tuple(kinds),
         )
         rows = cur.fetchall()
         results: list[MemoryRecord] = []
         for row in rows:
             embedding = json.loads(row[3]) if row[3] else []
+            metadata = json.loads(row[8]) if row[8] else {}
             results.append(
                 MemoryRecord(
                     id=row[0],
@@ -109,9 +112,50 @@ class MemoryStore:
                     source=row[5] or "",
                     confidence=row[6] or 0.0,
                     topic=row[7],
+                    metadata=metadata,
                 )
             )
         return results
+
+    def memories_since(
+        self,
+        since_ts: float,
+        kinds: Iterable[MemoryKind] | None = None,
+    ) -> list[MemoryRecord]:
+        kinds = list(kinds or ["episodic", "semantic", "temporal_truth"])
+        placeholders = ",".join("?" for _ in kinds)
+        cur = self.conn.execute(
+            f"""SELECT id, kind, content, embedding, created_at, source, confidence, topic, metadata
+            FROM memories WHERE kind IN ({placeholders}) AND created_at >= ?""",
+            (*kinds, since_ts),
+        )
+        rows = cur.fetchall()
+        results: list[MemoryRecord] = []
+        for row in rows:
+            results.append(
+                MemoryRecord(
+                    id=row[0],
+                    kind=row[1],
+                    content=row[2],
+                    embedding=json.loads(row[3]) if row[3] else [],
+                    created_at=row[4],
+                    source=row[5] or "",
+                    confidence=row[6] or 0.0,
+                    topic=row[7],
+                    metadata=json.loads(row[8]) if row[8] else {},
+                )
+            )
+        return results
+
+    def decay_snapshot(
+        self, kinds: Iterable[MemoryKind], decay_halflife_days: int
+    ) -> list[tuple[MemoryRecord, float]]:
+        rows = self.list_memories(kinds)
+        snapshot: list[tuple[MemoryRecord, float]] = []
+        for mem in rows:
+            decayed = decay_confidence(mem["confidence"], mem["created_at"], decay_halflife_days)
+            snapshot.append((mem, decayed))
+        return snapshot
 
     def topk_similar(
         self,
@@ -121,7 +165,7 @@ class MemoryStore:
         min_similarity: float,
         decay_halflife_days: int | None = None,
     ) -> list[tuple[MemoryRecord, float]]:
-        memories = self.list_memories(kinds)
+        memories = self.list_memories(list(kinds))
         scored: list[tuple[MemoryRecord, float]] = []
         for mem in memories:
             similarity = cosine_similarity(mem["embedding"], query_embedding)
