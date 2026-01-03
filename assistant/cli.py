@@ -131,7 +131,6 @@ def summaries(
         "-p",
         help="daily veya weekly özet",
         show_default=True,
-        type=typer.Choice(["daily", "weekly"], case_sensitive=False),
     ),
     include_decay: bool = typer.Option(False, "--decay", help="Decay raporunu da üret"),
     include_temporal: bool = typer.Option(
@@ -145,10 +144,14 @@ def summaries(
     settings = load_settings(chosen_config)
     setup_logging(settings.paths.log_dir, environment=settings.environment)
     engine = ConversationEngine(settings=settings)
+    normalized_period = period.lower()
+    if normalized_period not in {"daily", "weekly"}:
+        raise typer.BadParameter("period daily veya weekly olmalı")
+
     summary_path = summarize_period(
         store=engine.memory_store,
         llm=engine.llm_client,
-        period=period,
+        period=normalized_period,
         summaries_dir=settings.paths.summaries_dir,
         max_tokens=settings.profile.summary_max_tokens,
     )
@@ -158,7 +161,7 @@ def summaries(
             store=engine.memory_store,
             summaries_dir=settings.paths.summaries_dir,
             decay_halflife_days=settings.memory.decay_halflife_days,
-            label=period,
+            label=normalized_period,
         )
         console.print(f"Decay raporu: {decay_path}")
     if include_temporal:
