@@ -1,8 +1,11 @@
 import json
 import logging
 import sqlite3
+import time
 from pathlib import Path
 from typing import Any, Iterable
+
+from assistant.memory.temporal import decay_confidence
 
 from assistant.typing import MemoryKind, MemoryRecord
 from assistant.utils import cosine_similarity, now_ts
@@ -108,13 +111,19 @@ class MemoryStore:
         kinds: Iterable[MemoryKind],
         top_k: int,
         min_similarity: float,
+        decay_halflife_days: int | None = None,
     ) -> list[tuple[MemoryRecord, float]]:
         memories = self.list_memories(kinds)
         scored: list[tuple[MemoryRecord, float]] = []
         for mem in memories:
-            score = cosine_similarity(mem["embedding"], query_embedding)
-            if score >= min_similarity:
-                scored.append((mem, score))
+            similarity = cosine_similarity(mem["embedding"], query_embedding)
+            if similarity < min_similarity:
+                continue
+            conf = mem["confidence"]
+            if decay_halflife_days:
+                conf = decay_confidence(conf, mem["created_at"], decay_halflife_days)
+            score = similarity * conf
+            scored.append((mem, score))
         scored.sort(key=lambda x: x[1], reverse=True)
         return scored[:top_k]
 

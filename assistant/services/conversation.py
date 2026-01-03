@@ -66,6 +66,7 @@ class ConversationEngine:
             kinds=kinds,
             top_k=self.settings.memory.top_k,
             min_similarity=self.settings.memory.min_similarity,
+            decay_halflife_days=self.settings.memory.decay_halflife_days,
         )
         snippets = [format_memory_snippet(mem) for mem, _score in results]
         return snippets
